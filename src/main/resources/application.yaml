@@ -1,0 +1,12 @@
+# 给html加的
+thymeleaf:
+  # 关闭页面缓存
+  cache: false
+  # 模板编码
+  encoding: utf-8
+  # 页面映射路径
+  prefix: classpath:/templates/
+  # thymeleaf视图后的后缀
+  suffix: .html
+  # thymeleaf模板模式
+  mode: HTML

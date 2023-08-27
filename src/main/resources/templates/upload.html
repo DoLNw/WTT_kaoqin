@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title></head>
+<body>
+<!--https://blog.csdn.net/hcz666/article/details/117235296-->
+<!--SpringBoot-&#45;&#45;(11) SpringBoot模板Thymeleaf的常用属性-->
+<!--springboot,themleaf的action属性传参-->
+<form th:action="@{'/uploadAndGet/'+${pythonFileName}}" method="post" enctype="multipart/form-data">
+    <input type="file" name="uploadFile" value="请选择文件">
+    <input type="submit" value="wtt，请上传">
+    <p th:text="${pythonFileName}"></p>
+</form>
+</body>
+</html>
