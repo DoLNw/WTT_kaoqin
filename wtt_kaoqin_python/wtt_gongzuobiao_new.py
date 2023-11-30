@@ -18,6 +18,47 @@
 
 # ps -ef | grep java
 
+# http://43.142.73.10:10007/upload/wtt_gongzuobiao_new
+# http://43.142.73.10:10007/upload/wtt_gongzuobiao_old
+
+# source /Users/dinosaur/jcwang/pythonvenv/venvpaper39/bin/activate
+# pip install chinesecalendar  #默认安装是最新版版的1.6.1
+# 
+
+
+
+ 
+# 或者在判断的同时，获取节日名
+import chinese_calendar as calendar
+from chinese_calendar import is_workday
+
+
+
+# import datetime
+ 
+# # 判断指定日期,如：2015年9月3日 是不是节假日
+# data = datetime.date(2015, 9, 3)
+# if is_workday(data):
+#   print("是工作日")
+# else:
+#   print("是节假日")
+ 
+# # 或者在判断的同时，获取节日名
+# import chinese_calendar as calendar
+# on_holiday, holiday_name = calendar.get_holiday_detail(data)
+# if on_holiday:
+#   print('是节假日')
+# else:
+#   print('是工作日')
+# if holiday_name in ["New Year's Day","Spring Festival","Tomb-sweeping Day","Labour Day","Dragon Boat Festival","National Day","Mid-autumn Festival","Anti-Fascist 70th Day"]:
+#   print(holiday_name)
+# else:
+#   print('普通节假日')
+ 
+
+
+
+
 
 
 import sys
@@ -42,7 +83,7 @@ def process_kaoqin(outputPath, inputFileName):
 
 
     # 一次for循环一个sheet
-    for processDayTwo in ["算上午下午", "一天两次即可", "两次间隔一小时"]:
+    for processDayTwo in ["算上午下午", "一天两次即可", "两次间隔一小时", "使用另一个日期"]:
 
         
         # 创建一个worksheet
@@ -55,7 +96,7 @@ def process_kaoqin(outputPath, inputFileName):
         write_worksheet.write(4, 3, '实际打卡次数')
         write_worksheet.write(4, 4, '考勤天数')
         write_worksheet.write(4, 5, '缺勤')
-        write_worksheet.write(4, 7, "周末打卡")
+        write_worksheet.write(4, 7, "节假日打卡")
 
         
 
@@ -95,12 +136,14 @@ def process_kaoqin(outputPath, inputFileName):
 
 
                 userId = row_data[0]
-                gonghao = row_data[1]
-                name = row_data[2]
-                reportTime = row_data[4]
-                workDate = row_data[6]
+                # 目前工号和名字交换了，因为之前有的人工号不存在，本来用工号作为唯一id的，下现在用名字。
+                gonghao = row_data[2]
+                name = row_data[1]
+                reportTimeStr = row_data[4]
+                anotherDateStr = row_data[7]   #  改日期只到日，没有别的
 
-                formatReportTime = datetime.datetime.strptime(reportTime, "%Y年%m月%d日 %H:%M")
+
+                formatReportTime = datetime.datetime.strptime(reportTimeStr, "%Y年%m月%d日 %H:%M")
                 if workdays == 0:
                     for i in range(1, 32):
                         try:
@@ -110,7 +153,8 @@ def process_kaoqin(outputPath, inputFileName):
                             write_worksheet.write(4, 9 + thisdate.day, thisdateStr)
                         except(ValueError):
                             break
-                        if thisdate.weekday() < 5: # Monday == 0, Sunday == 6 
+                        # if thisdate.weekday() < 5: # Monday == 0, Sunday == 6 
+                        if is_workday(thisdate):
                             workdays += 1
 
                     write_worksheet.write(1, 0, '总共有{0}个sheet'.format(len(all_sheets)))
@@ -123,56 +167,84 @@ def process_kaoqin(outputPath, inputFileName):
                     namesInfos[gonghao] = [userId, name, ""]  
 
 
-
                 
-                formatReportTimeStr = formatReportTime.strftime("%Y-%m-%d")
-                # 不是周末
-                if formatReportTime.weekday()+1 != 6 and formatReportTime.weekday()+1 != 7:  
-                    # 该工人工号不存在，先创建该字典
-                    if nameToKqoQin.get(gonghao) == None:                        
-                        nameToKqoQin[gonghao] = {}
+                if processDayTwo == "使用另一个日期":
+                    # 这个日期，给 "使用另一个日期" 这一类用
+                    try:
+                        formatAnotherDate = datetime.datetime.strptime(anotherDateStr, "%Y-%m-%d")
+                    except(ValueError):
+                        break
+                    # 不是周末
+                    # if formatAnotherDate.weekday()+1 != 6 and formatAnotherDate.weekday()+1 != 7 :
+                    if is_workday(formatAnotherDate):
+                        # 该工人工号不存在，先创建该字典
+                        if nameToKqoQin.get(gonghao) == None:                        
+                            nameToKqoQin[gonghao] = {}
 
-                    # 该工人的该日期不存在
-                    if nameToKqoQin.get(gonghao).get(formatReportTimeStr) == None:  
-                        nameToKqoQin[gonghao][formatReportTimeStr] = [0, 0, []]   # 第一个代表上午，第二个代表下午，第三个代表当天打卡的时间
+                        # 该工人的该日期不存在
+                        if nameToKqoQin.get(gonghao).get(anotherDateStr) == None:  
+                            nameToKqoQin[gonghao][anotherDateStr] = [0, 0, []]   # 第一个代表上午，第二个代表下午，第三个代表当天打卡的时间
 
-                    if processDayTwo == "算上午下午":
-                        # 上午
-                        if formatReportTime.hour < 12:
-                            nameToKqoQin.get(gonghao).get(formatReportTimeStr)[0] += 1
-                        # 下午
-                        else:
-                            nameToKqoQin.get(gonghao).get(formatReportTimeStr)[1] += 1
+                        nameToKqoQin.get(gonghao).get(anotherDateStr)[0] += 1
 
-                    elif processDayTwo == "一天两次即可":
-                        nameToKqoQin.get(gonghao).get(formatReportTimeStr)[0] += 1
+                        
+                    # 是周末，记录一下打卡日期
+                    else:
+                        namesInfos[gonghao][2] += "，{0}".format(anotherDateStr)
 
-                    elif processDayTwo == "两次间隔一小时":
-                        reportTimes = nameToKqoQin.get(gonghao).get(formatReportTimeStr)[2] # 得到所有的打卡时间
-
-                        if len(reportTimes) == 0:
-                            nameToKqoQin.get(gonghao).get(formatReportTimeStr)[0] += 1
-                        else:
-                            allDaYuOneHour = True
-                            for i in nameToKqoQin.get(gonghao).get(formatReportTimeStr)[2]:
-                                if (abs((formatReportTime - i).seconds) / 3600) < 1: # 时间间隔大于1小时
-                                    allDaYuOneHour = False
-                                    break
-                            if allDaYuOneHour:
-                                nameToKqoQin.get(gonghao).get(formatReportTimeStr)[0] += 1
-
-                        nameToKqoQin.get(gonghao).get(formatReportTimeStr)[2].append(formatReportTime)
-
-                # 是周末，记录一下打卡日期
                 else:
-                    namesInfos[gonghao][2] += "，{0}".format(formatReportTime)
+                    formatReportTimeStr = formatReportTime.strftime("%Y-%m-%d")
+                    # 不是周末
+                    # if formatReportTime.weekday()+1 != 6 and formatReportTime.weekday()+1 != 7:  
+                    if is_workday(formatReportTime):
+                        # 该工人工号不存在，先创建该字典
+                        if nameToKqoQin.get(gonghao) == None:                        
+                            nameToKqoQin[gonghao] = {}
+
+                        # 该工人的该日期不存在
+                        if nameToKqoQin.get(gonghao).get(formatReportTimeStr) == None:  
+                            nameToKqoQin[gonghao][formatReportTimeStr] = [0, 0, []]   # 第一个代表上午，第二个代表下午，第三个代表当天打卡的时间
+
+                        if processDayTwo == "算上午下午":
+                            # 上午
+                            if formatReportTime.hour < 12:
+                                nameToKqoQin.get(gonghao).get(formatReportTimeStr)[0] += 1
+                            # 下午
+                            else:
+                                nameToKqoQin.get(gonghao).get(formatReportTimeStr)[1] += 1
+
+                        elif processDayTwo == "一天两次即可":
+                            nameToKqoQin.get(gonghao).get(formatReportTimeStr)[0] += 1
+
+                        elif processDayTwo == "两次间隔一小时":
+                            reportTimes = nameToKqoQin.get(gonghao).get(formatReportTimeStr)[2] # 得到所有的打卡时间
+
+                            if len(reportTimes) == 0:
+                                nameToKqoQin.get(gonghao).get(formatReportTimeStr)[0] += 1
+                            else:
+                                allDaYuOneHour = True
+                                for i in nameToKqoQin.get(gonghao).get(formatReportTimeStr)[2]:
+                                    if (abs((formatReportTime - i).seconds) / 3600) < 1: # 时间间隔大于1小时
+                                        allDaYuOneHour = False
+                                        break
+                                if allDaYuOneHour:
+                                    nameToKqoQin.get(gonghao).get(formatReportTimeStr)[0] += 1
+
+                            nameToKqoQin.get(gonghao).get(formatReportTimeStr)[2].append(formatReportTime)
+
+                        
+                        
+                    # 是周末，记录一下打卡日期
+                    else:
+                        namesInfos[gonghao][2] += "，{0}".format(formatReportTime)
+
 
 
 
             userRow = newNamesRow          # 当前销售部
-            for gonghao in sorted(nameToKqoQin.keys()):
+            # for gonghao in sorted(nameToKqoQin.keys()):
+            for gonghao in nameToKqoQin.keys():
                 userDict = nameToKqoQin[gonghao]
-
 
                 reportCount = 0
                 nowWriteColum = 9
@@ -189,7 +261,7 @@ def process_kaoqin(outputPath, inputFileName):
                             reportCount += 1
                             write_worksheet.write(userRow, nowWriteColum + date.day, "下午")
 
-                    elif processDayTwo == "一天两次即可":
+                    elif (processDayTwo == "一天两次即可" or processDayTwo == "使用另一个日期") and date.month == formatReportTime.month:
                         if arrs[0] >= 2:
                             reportCount += 2
                         elif arrs[0] == 1:
@@ -208,7 +280,6 @@ def process_kaoqin(outputPath, inputFileName):
                             jiangeStr += "间隔{}小时\n".format(round((reportTimes[i] - reportTimes[i-1]).seconds / 3600, 1))
 
                         write_worksheet.write(userRow, nowWriteColum + date.day, "打卡{0}次 \n {1}".format(arrs[0], jiangeStr))
-
 
                 write_worksheet.write(userRow, 0, namesInfos[gonghao][0])
                 write_worksheet.write(userRow, 1, gonghao)
@@ -234,10 +305,10 @@ def process_kaoqin(outputPath, inputFileName):
 
 
 
-# 自己电脑处理得注释掉，放到云端需要放开。
-process_kaoqin(sys.argv[1], sys.argv[2])
+# # 自己电脑处理得注释掉，放到云端需要放开。
+# process_kaoqin(sys.argv[1], sys.argv[2])
 
 # # 为了在自己电脑处理用的
-# if __name__ == '__main__':
-#     current_work_dir = os.path.abspath(os.path.dirname(__file__))           # 当前文件所在的目录，不能在命令行运行，会__file__ not defined
-#     process_kaoqin(current_work_dir, r'/Users/dinosaur/Downloads/日志报表20230818153453452.xlsx')
+if __name__ == '__main__':
+    current_work_dir = os.path.abspath(os.path.dirname(__file__))           # 当前文件所在的目录，不能在命令行运行，会__file__ not defined
+    process_kaoqin(current_work_dir, r'/Users/dinosaur/Downloads/日志报表20231130214339046.xlsx')

@@ -44,7 +44,6 @@ public class NewFileUploadController {
     SimpleDateFormat sdf2 = new SimpleDateFormat("yyyyMMdd-HHmmss_");
 
 
-
     @GetMapping("/upload/{pythonFileName}")
     public ModelAndView upload(ModelAndView modelAndView, @PathVariable("pythonFileName") String pythonFileName) {
 

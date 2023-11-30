@@ -6,7 +6,7 @@
 # 在mac上测试和在linux上使用需要更改两个地方，第一个，python这个command；第二个，application.yml中的file-save-path这个路径。
 
 # 需要把python文件上传到：
-# scp /Users/dinosaur/jcwang/IDEA/WTT_kaoqin/wtt_kaoqin_python/wtt_gongzuobiao.py ubuntu@43.142.73.10:/home/ubuntu/wtt_kaoqin
+# scp /Users/dinosaur/jcwang/IDEA/WTT_kaoqin/wtt_kaoqin_python/wtt_gongzuobiao_old.py ubuntu@43.142.73.10:/home/ubuntu/wtt_kaoqin
 
 # 需要把这个java包上传到：
 # scp /Users/dinosaur/jcwang/IDEA/WTT_kaoqin/target/WTT_kaoqin-0.0.1-SNAPSHOT.jar ubuntu@43.142.73.10:/home/ubuntu/wtt_kaoqin
@@ -155,7 +155,7 @@ def process_kaoqin(outputPath, inputFileName):
         if peichanjia_hour != 0:
             sanghunpeichanxinguanbeizhu += "陪产假{}h，".format(peichanjia_hour)
         if xinguan_hour != 0:
-            sanghunpeichanxinguanbeizhu += "新冠病假假{}h，".format(xinguan_hour)
+            sanghunpeichanxinguanbeizhu += "新冠病假{}h，".format(xinguan_hour)
         write_worksheet.write(i, 13, sanghunpeichanxinguanbeizhu)
 
 
