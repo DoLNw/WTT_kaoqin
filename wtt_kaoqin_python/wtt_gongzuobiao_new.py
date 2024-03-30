@@ -266,7 +266,8 @@ def process_kaoqin(outputPath, inputFileName):
                             reportCount += 2
                         elif arrs[0] == 1:
                             reportCount += 1
-                        write_worksheet.write(userRow, nowWriteColum + date.day, "打卡{0}次".format(arrs[0]))
+                        if date.year >= 2024:
+                            write_worksheet.write(userRow, nowWriteColum + date.day, "打卡{0}次".format(arrs[0]))
                     
                     elif processDayTwo == "两次间隔一小时":
                         if arrs[0] >= 2:
@@ -311,4 +312,4 @@ def process_kaoqin(outputPath, inputFileName):
 # # 为了在自己电脑处理用的
 if __name__ == '__main__':
     current_work_dir = os.path.abspath(os.path.dirname(__file__))           # 当前文件所在的目录，不能在命令行运行，会__file__ not defined
-    process_kaoqin(current_work_dir, r'/Users/dinosaur/Downloads/日志报表20231130214339046.xlsx')
+    process_kaoqin(current_work_dir, r'/Users/dinosaur/Downloads/aaa1.xlsx')

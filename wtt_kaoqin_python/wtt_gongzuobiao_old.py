@@ -171,10 +171,10 @@ def process_kaoqin(outputPath, inputFileName):
     # 存储写入的
     write_workbook.save(write_workbook_name)
 
-# 自己电脑处理得注释掉，放到云端需要放开。
-process_kaoqin(sys.argv[1], sys.argv[2])
+# # 自己电脑处理得注释掉，放到云端需要放开。
+# process_kaoqin(sys.argv[1], sys.argv[2])
 
-# # 为了在自己电脑处理用的
-# if __name__ == '__main__':
-#     current_work_dir = os.path.abspath(os.path.dirname(__file__))           # 当前文件所在的目录，不能在命令行运行，会__file__ not defined
-#     process_kaoqin(current_work_dir, r'/Users/dinosaur/jcwang/IDEA/WTT_kaoqin/wtt_kaoqin_python/2023年5月分公司考勤.xlsx')
+# 为了在自己电脑处理用的
+if __name__ == '__main__':
+    current_work_dir = os.path.abspath(os.path.dirname(__file__))           # 当前文件所在的目录，不能在命令行运行，会__file__ not defined
+    process_kaoqin(current_work_dir, r'/Users/dinosaur/Downloads/a111.xlsx')
